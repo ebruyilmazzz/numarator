@@ -1,18 +1,79 @@
 <!DOCTYPE html>
-<html>
-<head><title>Kiosk</title></head>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kiosk</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        select, button {
+            font-size: 24px;
+            padding: 10px 30px;
+            margin: 10px;
+        }
+
+        #result {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #result {
+                visibility: visible;
+                position: absolute;
+                top: 200px;
+                left: 0;
+                right: 0;
+                text-align: center;
+                font-size: 64px;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
 <body>
-    <button onclick="createTicket()">Sıra Al</button>
-    <p id="result"></p>
+    <div class="container">
+        <h1>Sıra Alma Kiosku</h1>
+
+        <label for="masa_tipi" style="font-size: 24px;">Masa Seçin:</label><br>
+        <select id="masa_tipi">
+            <option value="hasar">Hasar</option>
+            <option value="mekanik">Mekanik</option>
+            <option value="onarım">Onarım</option>
+        </select><br>
+
+        <button onclick="createTicket()">Sıra Al</button>
+        <div id="result"></div>
+    </div>
 
     <script>
         function createTicket() {
-            fetch('create_ticket.php')
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('result').innerText = "Sıra Numaranız: " + data.number;
-                    window.print(); // Basit print
-                });
+            const masa = document.getElementById('masa_tipi').value;
+
+            fetch('create_ticket.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'masa_tipi=' + encodeURIComponent(masa)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('result').innerText = "Sıra Numaranız: " + data.number;
+                setTimeout(() => window.print(), 500);
+            });
         }
     </script>
 </body>
