@@ -51,30 +51,39 @@
         <select id="masa_tipi">
             <option value="hasar">Hasar</option>
             <option value="mekanik">Mekanik</option>
-            <option value="onarım">Onarım</option>
+            <option value="onarim">Onarim</option>
         </select><br>
 
-        <button onclick="createTicket()">Sıra Al</button>
+        <button onclick="siraAl(document.getElementById('masa_tipi').value)">Sıra Al</button>
+
+        <div id="sonuc"></div>
         <div id="result"></div>
     </div>
 
+    
     <script>
-        function createTicket() {
-            const masa = document.getElementById('masa_tipi').value;
+     function createTicket() {
+      const tip = document.getElementById('masa_tipi').value;
+      siraAl(tip);
+  }
 
-            fetch('create_ticket.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'masa_tipi=' + encodeURIComponent(masa)
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('result').innerText = "Sıra Numaranız: " + data.number;
-                setTimeout(() => window.print(), 500);
-            });
-        }
+  function siraAl(tip) {
+      fetch('create_ticket.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ masa_tipi: tip })
+      })
+      .then(res => res.json())
+      .then(data => {
+          console.log('Alınan sıra:', data);
+          document.getElementById('result').textContent = 'Sıra Numaranız: ' + data.number;
+          window.print();
+      })
+      .catch(err => {
+          console.error('Hata:', err);
+          alert('Bir hata oluştu.');
+      });
+  }
     </script>
 </body>
 </html>
