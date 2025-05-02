@@ -5,24 +5,50 @@
     <title>Kiosk</title>
     <style>
         body {
+            background-color: #f0fff0;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
+
         .container {
             text-align: center;
             margin-top: 100px;
         }
 
-        select, button {
+        h1 {
+            color: #006400;
+            font-size: 36px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .custom-button {
+            background-color: #008000;
+            color: white;
             font-size: 24px;
-            padding: 10px 30px;
-            margin: 10px;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .custom-button:hover {
+            background-color: #006400;
         }
 
         #result {
             font-size: 48px;
             font-weight: bold;
             color: #333;
-            margin-top: 40px;
+            margin-top: 50px;
             text-align: center;
         }
 
@@ -30,6 +56,7 @@
             body * {
                 visibility: hidden;
             }
+
             #result {
                 visibility: visible;
                 position: absolute;
@@ -45,45 +72,43 @@
 </head>
 <body>
     <div class="container">
-        <h1>Sıra Alma Kiosku</h1>
+        <h1>SIRA AL</h1>
 
-        <label for="masa_tipi" style="font-size: 24px;">Masa Seçin:</label><br>
-        <select id="masa_tipi">
-            <option value="hasar">Hasar</option>
-            <option value="mekanik">Mekanik</option>
-            <option value="onarim">Onarim</option>
-        </select><br>
+        <div class="button-group">
+            <button class="custom-button" onclick="siraAl('hasar')">Hasar</button>
+            <button class="custom-button" onclick="siraAl('mekanik')">Mekanik</button>
+            <button class="custom-button" onclick="siraAl('onarim')">Onarım</button>
+        </div>
 
-        <button onclick="siraAl(document.getElementById('masa_tipi').value)">Sıra Al</button>
-
-        <div id="sonuc"></div>
         <div id="result"></div>
     </div>
 
-    
     <script>
-     function createTicket() {
-      const tip = document.getElementById('masa_tipi').value;
-      siraAl(tip);
-  }
+        function siraAl(tip) {
+            const departmanIsimleri = {
+                hasar: "Hasar",
+                mekanik: "Mekanik",
+                onarim: "Onarım"
+            };
 
-  function siraAl(tip) {
-      fetch('create_ticket.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ masa_tipi: tip })
-      })
-      .then(res => res.json())
-      .then(data => {
-          console.log('Alınan sıra:', data);
-          document.getElementById('result').textContent = 'Sıra Numaranız: ' + data.number;
-          window.print();
-      })
-      .catch(err => {
-          console.error('Hata:', err);
-          alert('Bir hata oluştu.');
-      });
-  }
+            fetch('create_ticket.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ masa_tipi: tip })
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Alınan sıra:', data);
+                document.getElementById('result').innerHTML = 
+                    'Sıra Numaranız: ' + data.number + '<br>' +
+                    'Departman: ' + departmanIsimleri[tip];
+                window.print();
+            })
+            .catch(err => {
+                console.error('Hata:', err);
+                alert('Bir hata oluştu.');
+            });
+        }
     </script>
 </body>
 </html>
