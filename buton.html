@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Kiosk</title></head>
+<body>
+    <button onclick="createTicket()">Sıra Al</button>
+    <p id="result"></p>
+
+    <script>
+        function createTicket() {
+            fetch('create_ticket.php')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('result').innerText = "Sıra Numaranız: " + data.number;
+                    window.print(); // Basit print
+                });
+        }
+    </script>
+</body>
+</html>
