@@ -2,6 +2,13 @@
 ob_clean();
 header('Content-Type: application/json');
 
+// DEBUG MODU: true yaparsan log.txt'ye yazar, false yaparsan yazmaz
+$DEBUG_MODE = false;
+
+if ($DEBUG_MODE) {
+    file_put_contents("log.txt", "Gelen veri: " . json_encode($_POST) . "\n", FILE_APPEND);
+}
+
 ini_set('display_errors', 0);
 error_reporting(0);
 
@@ -24,22 +31,18 @@ if (!in_array($masa_tipi, $gecerli_tipler)) {
     echo json_encode(['error' => 'Geçersiz masa tipi.']);
     exit;
 }
-
-// SAAT KONTROLÜ: sadece 09:00 - 18:00 arası
-/*$saat = (int)date('H');
-if ($saat < 9 || $saat >= 18) {
-    echo json_encode(['error' => 'Numaratör sadece 09:00 - 18:00 arasında çalışır.']);
+$simdi_saat = date('H:i');
+if ($simdi_saat < '08:00') {
+    echo json_encode(['error' => 'Sıra alma işlemi saat 09:00’dan önce yapılamaz.']);
     exit;
-}*/
+}
 
-// Başlangıç sayısı belirleme
 switch ($masa_tipi) {
     case 'hasar':   $baslangic_sayi = 100; break;
     case 'mekanik': $baslangic_sayi = 300; break;
     case 'onarim':  $baslangic_sayi = 500; break;
 }
 
-// BUGÜN oluşturulmuş en büyük numarayı al
 $tarih = date('Y-m-d');
 $stmt = $conn->prepare("SELECT MAX(number) as max_number FROM counter WHERE departman = ? AND DATE(created_at) = ?");
 $stmt->execute([$masa_tipi, $tarih]);
@@ -51,12 +54,22 @@ if ($son_sayi === null || $son_sayi < $baslangic_sayi) {
 }
 
 $yeni_sayi = $son_sayi + 1;
-
-// personel alanı istenirse buraya $_POST['personel'] eklenebilir
 $personel = '';
 
-$insert = $conn->prepare("INSERT INTO counter (departman, number, created_at, personel) VALUES (?, ?, NOW(), ?)");
+$insert = $conn->prepare("INSERT INTO counter (departman, number, created_at, personel, status) VALUES (?, ?, NOW(), ?, 'waiting')");
 $insert->execute([$masa_tipi, $yeni_sayi, $personel]);
 
-echo json_encode(['number' => $yeni_sayi]);
+if ($DEBUG_MODE) {
+    file_put_contents("log.txt", "Insert sonrası satır sayısı: " . $insert->rowCount() . "\n", FILE_APPEND);
+}
+
+if ($insert->rowCount() > 0) {
+    echo json_encode(['number' => $yeni_sayi]);
+} else {
+    $errorInfo = $insert->errorInfo();
+    if ($DEBUG_MODE) {
+        file_put_contents("log.txt", "Hata: " . $errorInfo[2] . "\n", FILE_APPEND);
+    }
+    echo json_encode(['error' => 'Kayıt başarısız: ' . $errorInfo[2]]);
+}
 exit;
