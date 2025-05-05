@@ -4,6 +4,7 @@ session_start();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $personel_adi = $_POST['personel_adi'];
     $departman_adi = $_POST['departman_adi'];
+    $desk_name = $_POST['desk_name'];
 
     try {
         $pdo = new PDO("mysql:host=localhost;dbname=kiosk;charset=utf8", "root", "");
@@ -23,7 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $department_id = $department['id'];
         }
 
-        // Aynı personel bu departmanda zaten var mı?
+        // Masa ekle (her kayıtta yeni masa giriliyor)
+        $stmt = $pdo->prepare("INSERT INTO desk (desk_name) VALUES (?)");
+        $stmt->execute([$desk_name]);
+        $desk_id = $pdo->lastInsertId();
+
+        // Aynı personel bu departmanda kayıtlı mı?
         $stmt = $pdo->prepare("SELECT * FROM personnel WHERE personel_adi = ? AND section_id = ?");
         $stmt->execute([$personel_adi, $department_id]);
         $existing = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -31,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($existing) {
             $error = "❗ Bu personel zaten bu departmanda kayıtlı!";
         } else {
-            // Kayıt işlemi
-            $stmt = $pdo->prepare("INSERT INTO personnel (personel_adi, section_id) VALUES (?, ?)");
-            $stmt->execute([$personel_adi, $department_id]);
+            // Personel kaydı
+            $stmt = $pdo->prepare("INSERT INTO personnel (personel_adi, section_id, desk_id) VALUES (?, ?, ?)");
+            $stmt->execute([$personel_adi, $department_id, $desk_id]);
 
             $_SESSION['success'] = "✅ Kayıt başarılı! Lütfen giriş yapın.";
             header("Location: login.php");
@@ -118,19 +124,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <div class="register-container">
-        <h2>Personel Kayıt</h2>
-        <?php if (!empty($error)) echo "<div class='error'>{$error}</div>"; ?>
-        <form method="post">
-            <input type="text" name="personel_adi" placeholder="İsim" required>
-            <select name="departman_adi" required>
-                <option value="hasar">Hasar</option>
-                <option value="mekanik">Mekanik</option>
-                <option value="onarim">Onarım</option>
-            </select>
-            <button type="submit">Kaydol</button>
-        </form>
-        <a href="login.php">Zaten hesabın var mı? Giriş Yap</a>
-    </div>
+<div class="register-container">
+    <h2>Personel Kayıt</h2>
+    <?php if (!empty($error)) echo "<div class='error'>{$error}</div>"; ?>
+    <form method="post">
+        <input type="text" name="personel_adi" placeholder="İsim" required>
+
+        <select name="departman_adi" required>
+            <option value="">Departman Seçin</option>
+            <option value="hasar">Hasar</option>
+            <option value="mekanik">Mekanik</option>
+            <option value="onarim">Onarım</option>
+        </select>
+
+        <input type="text" name="desk_name" placeholder="Masa Adı (örnek: M1)" required>
+
+        <button type="submit">Kaydol</button>
+    </form>
+    <a href="login.php">Zaten hesabın var mı? Giriş Yap</a>
+</div>
 </body>
 </html>

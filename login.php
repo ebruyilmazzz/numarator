@@ -8,6 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = new PDO("mysql:host=localhost;dbname=kiosk;charset=utf8", "root", "");
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+        // Personeli veritabanından sorgula
         $stmt = $pdo->prepare("
             SELECT 
                 p.id, 
@@ -22,14 +23,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
-            $_SESSION['personel'] = $user;
+            // Oturum oluştur ve kullanıcıyı yönlendir
+            $_SESSION['personel'] = [
+                'id' => $user['id'],
+                'personel_adi' => $user['personel_adi'],
+                'departman_adi' => $user['departman_adi']
+            ];
             header("Location: personel_panel.php");
             exit();
         } else {
             $error = "Personel bulunamadı.";
         }
     } catch (PDOException $e) {
-        $error = "Hata: " . $e->getMessage();
+        $error = "Veritabanı hatası: " . $e->getMessage();
     }
 }
 ?>
@@ -47,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
         }
 
         .login-container {
@@ -70,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 2px solid #198754;
             border-radius: 8px;
             font-size: 16px;
+            box-sizing: border-box;
         }
 
         button {
@@ -108,10 +116,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="login-container">
         <h2>Personel Giriş</h2>
-        <?php if (!empty($error)) echo "<div class='error'>{$error}</div>"; ?>
+        
+        <!-- Hata mesajı gösterimi -->
+        <?php if (!empty($error)): ?>
+            <div class="error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+
         <form method="post">
-            <label>
-                <input type="text" name="name" placeholder="Ad Soyad" required>
+            <label for="name">
+                <input type="text" id="name" name="name" placeholder="Ad Soyad" required>
             </label>
             <button type="submit">Giriş Yap</button>
         </form>

@@ -31,12 +31,20 @@ if (!in_array($masa_tipi, $gecerli_tipler)) {
     echo json_encode(['error' => 'Geçersiz masa tipi.']);
     exit;
 }
-$simdi_saat = date('H:i');
-if ($simdi_saat < '08:00') {
-    echo json_encode(['error' => 'Sıra alma işlemi saat 09:00’dan önce yapılamaz.']);
+
+// departman_id'yi al
+$stmt = $conn->prepare("SELECT id FROM department WHERE LOWER(departman_adi) = LOWER(?) LIMIT 1");
+$stmt->execute([$masa_tipi]);
+$departman = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$departman) {
+    echo json_encode(['error' => 'Departman bulunamadı.']);
     exit;
 }
 
+$departman_id = $departman['id'];
+
+// Başlangıç sayısını belirle
 switch ($masa_tipi) {
     case 'hasar':   $baslangic_sayi = 100; break;
     case 'mekanik': $baslangic_sayi = 300; break;
@@ -44,8 +52,8 @@ switch ($masa_tipi) {
 }
 
 $tarih = date('Y-m-d');
-$stmt = $conn->prepare("SELECT MAX(number) as max_number FROM counter WHERE departman = ? AND DATE(created_at) = ?");
-$stmt->execute([$masa_tipi, $tarih]);
+$stmt = $conn->prepare("SELECT MAX(number) as max_number FROM counter WHERE departman_id = ? AND DATE(created_at) = ?");
+$stmt->execute([$departman_id, $tarih]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $son_sayi = $row['max_number'];
 
@@ -54,10 +62,10 @@ if ($son_sayi === null || $son_sayi < $baslangic_sayi) {
 }
 
 $yeni_sayi = $son_sayi + 1;
-$personel = '';
+$personel_id = null; // henüz atanmamışsa NULL
 
-$insert = $conn->prepare("INSERT INTO counter (departman, number, created_at, personel, status) VALUES (?, ?, NOW(), ?, 'waiting')");
-$insert->execute([$masa_tipi, $yeni_sayi, $personel]);
+$insert = $conn->prepare("INSERT INTO counter (departman_id, number, created_at, personel_id, status) VALUES (?, ?, NOW(), ?, 'waiting')");
+$insert->execute([$departman_id, $yeni_sayi, $personel_id]);
 
 if ($DEBUG_MODE) {
     file_put_contents("log.txt", "Insert sonrası satır sayısı: " . $insert->rowCount() . "\n", FILE_APPEND);

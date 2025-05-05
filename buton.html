@@ -90,7 +90,7 @@
                 mekanik: "Mekanik",
                 onarim: "Onarım"
             };
-
+    
             fetch('create_ticket.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -98,17 +98,57 @@
             })
             .then(res => res.json())
             .then(data => {
-                console.log('Alınan sıra:', data);
-                document.getElementById('result').innerHTML = 
-                    'Sıra Numaranız: ' + data.number + '<br>' +
-                    'Departman: ' + departmanIsimleri[tip];
-                window.print();
+                const siraNumarasi = data.number;
+                const departmanAdi = departmanIsimleri[tip];
+    
+                const yazdirilacakMetin =
+                    "************************\n" +
+                    "*                      *\n" +
+                    "*   SIRA NUMARANIZ     *\n" +
+                    "*                      *\n" +
+                    "*        " + siraNumarasi.toString().padStart(4, '0') + "         *\n" +
+                    "*                      *\n" +
+                    "*   Departman:         *\n" +
+                    "*   " + departmanAdi.padEnd(18, ' ') + "*\n" +
+                    "*                      *\n" +
+                    "*  Lütfen bekleyiniz.  *\n" +
+                    "*                      *\n" +
+                    "************************\n";
+    
+                document.getElementById('result').innerHTML =
+                    'Sıra Numaranız: ' + siraNumarasi + '<br>' +
+                    'Departman: ' + departmanAdi;
+    
+                yaziciyaGonder(yazdirilacakMetin);
             })
             .catch(err => {
                 console.error('Hata:', err);
                 alert('Bir hata oluştu.');
             });
         }
+    
+        function yaziciyaGonder(metin) {
+            console.log("[TEST] Yazdırılacak veri:\n" + metin);
+    
+            /*
+            // Gerçek yazıcı servisi kullanılacaksa burayı aç:
+            fetch('http://localhost:5000/yazdir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ icerik: metin })
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log("Yazıcıya gönderildi:", data);
+            })
+            .catch(error => {
+                console.error("Yazdırma hatası:", error);
+            });
+            */
+        }
     </script>
+    
+    
+    
 </body>
 </html>

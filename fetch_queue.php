@@ -1,24 +1,29 @@
 <?php
-//bekleyen müşteri listesini döner
 session_start();
-header('Content-Type: application/json');
 
 if (!isset($_SESSION['personel'])) {
     echo json_encode([]);
     exit;
 }
 
-$departman = $_SESSION['personel']['departman_adi'];
+$personel_id = $_SESSION['personel']['id'];
 
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=kiosk;charset=utf8", "root", "");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn = new PDO("mysql:host=localhost;dbname=kiosk;charset=utf8", "root", "");
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->prepare("SELECT id, number FROM counter WHERE departman = ? AND status = 'waiting' ORDER BY created_at ASC");
-    $stmt->execute([$departman]);
+    // Personelin kendi departmanını alalım
+    $stmt = $conn->prepare("SELECT section_id FROM personnel WHERE id = ?");
+    $stmt->execute([$personel_id]);
+    $departman_id = $stmt->fetchColumn();
 
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($result);
+    // Bu departmandaki bekleyen müşterileri çek
+    $stmt = $conn->prepare("SELECT id, number FROM counter WHERE departman_id = ? AND status = 'waiting' ORDER BY id ASC");
+    $stmt->execute([$departman_id]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode($rows);
+
 } catch (PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode([]);
 }
