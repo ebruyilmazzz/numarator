@@ -34,6 +34,7 @@ Kiosk, dokunmatik ekranlara uygun, büyük butonlar ve sade tasarım prensipleri
    http://localhost/numarator
 ![Ekran görüntüsü 2025-05-07 114032](https://github.com/user-attachments/assets/e196d0c0-b2e8-4e3e-8db8-5671c6d308a2)
 
-![Ekran görüntüsü 2025-05-07 114248](https://github.com/user-attachments/assets/88471bb2-e571-429e-8dda-a2f4e536f56f)
+![image](https://github.com/user-attachments/assets/ee0726fc-7a36-414e-8474-a3e56e70c19c)
+
 
 ![Ekran görüntüsü 2025-05-07 115958](https://github.com/user-attachments/assets/fd290b08-1bfb-4fea-ab65-963b190dab16)
