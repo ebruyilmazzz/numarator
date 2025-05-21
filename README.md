@@ -23,6 +23,9 @@ Bu proje, kullanıcıların etkileşimli bir arayüz üzerinden işlemlerini kol
 
 Kiosk, dokunmatik ekranlara uygun, büyük butonlar ve sade tasarım prensipleriyle geliştirilmiştir. Responsive yapı sayesinde farklı ekran çözünürlüklerine uyumludur.
 
+## Katkıda Bulunma
+Pull request'ler ve öneriler memnuniyetle karşılanır. Lütfen önce bir issue açınız.
+
 ## 🛠️ Kurulum
 1. XAMPP'ı çalıştırın (Apache ve MySQL servislerini başlatın).
 2. Proje klasörünü `htdocs` içine yerleştirin:
